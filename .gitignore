@@ -1,9 +1,15 @@
-# --- Python / environments ---
+# --- Python / Notebooks ---
 __pycache__/
+**/__pycache__/
 *.py[cod]
+*.pyc
+*.pyo
 *.pyd
 *.so
 *.egg-info/
+*.ipynb_checkpoints/
+
+# --- Ambientes / Secrets ---
 .venv/
 .env
 .env.*
@@ -11,57 +17,51 @@ __pycache__/
 # --- IDE / OS ---
 .vscode/
 .idea/
+*.code-workspace
 .DS_Store
 Thumbs.db
 
-# --- Data & outputs (large / reproducible) ---
-# Ignore all raw/derived data by default; keep a placeholder README if you want.
-data/**
-!data/README.md
-
-# Ignore all outputs; keep Markdown reports if desired.
-outputs/**
-!outputs/**/*.md
-!outputs/**/README.md
-
-# Artifacts: ignore heavy binaries; keep configs/maps (.json)
-artifacts/**
-!artifacts/**/*.json
-!artifacts/**/README.md
-
-# --- Notebooks / checkpoints ---
-*.ipynb_checkpoints/
+# --- Build / Test ---
+build/
+dist/
+htmlcov/
 
 # --- Logs ---
 logs/
 *.log
 
-# --- ML / Training specific ---
+# --- Caches de treino / libs ML ---
 catboost_info/
 
-# --- Build / Test artifacts ---
-build/
-dist/
-htmlcov/
+# --- BINÁRIOS DE MODELO (sempre fora do Git) ---
+*.joblib
+*.pkl
 
-# venv / IDE
-.venv/
-.idea/
-*.code-workspace
+# =========================
+#  Dados e artefatos gerados
+# =========================
 
-# dados, artefatos e saídas
-data/
-artifacts/
-outputs/
+# data/: ignore tudo, exceto um README (placeholder)
+data/**
+!data/
+!data/README.md
+
+# artifacts/: ignore tudo, EXCETO JSONs e README
+artifacts/**
+!artifacts/
+!artifacts/**/*.json
+!artifacts/**/README.md
+
+# outputs/: ignore tudo, EXCETO relatórios .md e READMEs
+outputs/**
+!outputs/
+!outputs/**/*.md
+!outputs/**/README.md
+
+# reports/ (na raiz): ignore imagens/CSVs pesados; mantenha .md
 reports/**/confusion_matrix.png
 reports/**/f1_per_class.png
 reports/**/preds.csv
 reports/**/xai/
-
-# catboost / caches
-catboost_info/
-**/__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.ipynb_checkpoints/
+!reports/**/*.md
+!reports/**/README.md
