@@ -1,8 +1,8 @@
-﻿# outputs/
+# outputs/
 
-Resultados de **avaliação e inferência** (plots, CSVs, relatórios).
-Imagens/CSVs grandes são ignorados; arquivos .md/README podem ser versionados.
+Resultados de execução (não versionados), por exemplo:
+- `eval_*` — métricas/relatórios de avaliação
+- `preds.csv` (IGNORADO)
+- plots (`.png`) e artefatos XAI (IGNORADOS)
 
-Exemplos:
-- outputs/eval_unsw/ (confusion_matrix.png, f1_per_class.png, preds.csv, *.md)
-- outputs/eval_cic/  (idem)
+> Apenas relatórios em **Markdown** podem ser mantidos (exceção no `.gitignore`).
