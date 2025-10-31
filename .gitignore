@@ -43,3 +43,25 @@ catboost_info/
 build/
 dist/
 htmlcov/
+
+# venv / IDE
+.venv/
+.idea/
+*.code-workspace
+
+# dados, artefatos e saídas
+data/
+artifacts/
+outputs/
+reports/**/confusion_matrix.png
+reports/**/f1_per_class.png
+reports/**/preds.csv
+reports/**/xai/
+
+# catboost / caches
+catboost_info/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
