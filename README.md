@@ -199,41 +199,68 @@ aggregate-xai `
 ---
 
 ## Estrutura do Projeto
-
 ```
 2D-AEF/
-├─ pyproject.toml
-├─ requirements.txt
-├─ README.md
-├─ src/
-│  └─ twodaef/
-│     ├─ __init__.py
-│     ├─ utils/...
-│     ├─ features/...
-│     ├─ specialists/
-│     │   └─ train_specialists.py
-│     ├─ infer/
-│     │   └─ two_stage.py
-│     ├─ xai/
-│     │   ├─ shap_explain.py
-│     │   └─ ...
-│     ├─ reports/
-│     │   └─ plots_eval.py
-│     ├─ cli_train_gatekeeper.py
-│     ├─ cli_predict_gatekeeper.py
-│     ├─ cli_make_feature_pool.py
-│     ├─ cli_train_specialists.py
-│     ├─ cli_infer_twostage.py
-│     ├─ cli_eval_twostage.py
-│     ├─ cli_explain_specialist.py
-│     ├─ cli_aggregate_xai.py
-│     └─ cli_plot_eval.py
-├─ artifacts/...
-├─ outputs/...
-└─ data/
-   └─ raw/
-      ├─ unsw/...
-      └─ cicids2018/...
+├── .git/
+├── .idea/
+├── .venv/
+├── artifacts/
+├── catboost_info/
+├── data/
+│   └── raw/
+├── docs/
+├── outputs/
+├── reports/
+├── scripts/
+├── src/
+│   ├── twodaef/
+│   │   ├── __init__.py
+│   │   ├── cli_aggregate_xai.py
+│   │   ├── cli_eval_twostage.py
+│   │   ├── cli_explain_specialist.py
+│   │   ├── cli_infer_twostage.py
+│   │   ├── cli_make_feature_pool.py
+│   │   ├── cli_plot_eval.py
+│   │   ├── cli_predict_gatekeeper.py
+│   │   ├── cli_train_gatekeeper.py
+│   │   ├── cli_train_specialists.py
+│   │   ├── cli_xai_report.py
+│   │   ├── eval/
+│   │   │   ├── __init__.py
+│   │   │   └── evaluate.py
+│   │   ├── features/
+│   │   │   ├── __init__.py
+│   │   │   ├── costs.py
+│   │   │   └── pools.py
+│   │   ├── gatekeeper.py
+│   │   ├── infer/
+│   │   │   ├── __init__.py
+│   │   │   └── two_stage.py
+│   │   ├── reports/
+│   │   │   ├── __init__.py
+│   │   │   ├── aggregate_xai.py
+│   │   │   └── plots_eval.py
+│   │   ├── specialists/
+│   │   │   ├── __init__.py
+│   │   │   └── train_specialists.py
+│   │   ├── utils/
+│   │   │   ├── __init__.py
+│   │   │   ├── io.py
+│   │   │   └── metrics.py
+│   │   └── xai/
+│   │       ├── __init__.py
+│   │       └── shap_explain.py
+│   └── twodaef.egg-info/
+├── .gitattributes
+├── .gitignore
+├── CHANGELOG.md
+├── cols.txt
+├── CONTRIBUTING.md
+├── gatekeeper_cic_cols.txt
+├── poetry.lock
+├── pyproject.toml
+├── README.md
+└── requirements.txt
 ```
 
 ---

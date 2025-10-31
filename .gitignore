@@ -35,3 +35,11 @@ artifacts/**
 # --- Logs ---
 logs/
 *.log
+
+# --- ML / Training specific ---
+catboost_info/
+
+# --- Build / Test artifacts ---
+build/
+dist/
+htmlcov/

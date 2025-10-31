@@ -1,30 +1,32 @@
+# src/twodaef/cli_eval_twostage.py
+from __future__ import annotations
 import argparse
-from pathlib import Path
-from loguru import logger
 
 from twodaef.eval.evaluate import run_eval_twostage
 
+
 def main():
-    ap = argparse.ArgumentParser(description="Avaliação quantitativa do 2D-AEF (two-stage).")
-    ap.add_argument("--gatekeeper_model", type=Path, required=True)
-    ap.add_argument("--gatekeeper_features", type=Path, required=True)
-    ap.add_argument("--specialist_map", type=Path, required=True)
-    ap.add_argument("--input_csv", type=Path, required=True, help="CSV com coluna de rótulo")
-    ap.add_argument("--label_col", type=str, required=True, help="Nome da coluna de rótulo (ex.: label)")
-    ap.add_argument("--output_dir", type=Path, required=True)
-    ap.add_argument("--fill_missing", type=float, default=0.0)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--gatekeeper_model", required=True, help="(ignorado aqui, apenas coerência com pipeline)")
+    ap.add_argument("--gatekeeper_features", required=True, help="(ignorado aqui, apenas coerência com pipeline)")
+    ap.add_argument("--specialist_map", required=True, help="Caminho para specialist_map_*.json")
+    ap.add_argument("--input_csv", required=True, help="CSV rotulado para avaliação (ex.: data\\cic_eval.csv)")
+    ap.add_argument("--label_col", required=True, help="Nome da coluna de rótulo (ex.: label)")
+    ap.add_argument("--output_dir", required=True, help="Pasta para artefatos (ex.: outputs\\eval_cic)")
+    ap.add_argument("--fill_missing", type=float, default=0.0, help="(não usado aqui)")
     args = ap.parse_args()
 
+    # NOTA: este CLI assume que você já rodou o two_stage para gerar preds.csv em output_dir/preds.csv
+    preds_csv = f"{args.output_dir}/preds.csv".replace("\\", "/")
+
     res = run_eval_twostage(
-        gatekeeper_model=str(args.gatekeeper_model),
-        gatekeeper_features_file=str(args.gatekeeper_features),
-        specialist_map_json=str(args.specialist_map),
-        input_csv=str(args.input_csv),
+        preds_csv=preds_csv,
         label_col=args.label_col,
-        output_dir=str(args.output_dir),
-        fill_missing=args.fill_missing,
+        specialist_map=args.specialist_map,
+        out_dir=args.output_dir
     )
-    logger.info(f"OK — F1-macro={res['f1_macro']:.6f} | Acc={res['accuracy']:.6f} | out={args.output_dir}")
+    print(f"OK — F1-macro={res['f1_macro']:.6f} | Acc={res['accuracy']:.6f} | out={args.output_dir}")
+
 
 if __name__ == "__main__":
     main()

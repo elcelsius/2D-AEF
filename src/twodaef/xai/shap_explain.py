@@ -31,32 +31,110 @@ def _is_tree_model(model: Any) -> bool:
         "randomforest", "extratrees", "histgradientboosting", "gradientboosting"
     ])
 
-
-def _compute_shap_values(model: Any, X: pd.DataFrame) -> Tuple[np.ndarray, List[str]]:
+def _compute_shap_values(model, X):
     """
-    Retorna (shap_values_2d, feature_names). Para binário:
-      - alguns modelos retornam [arr_neg, arr_pos]; pegamos o da classe positiva (índice 1) se for lista.
-      - outros retornam um array 2D diretamente.
-    Usa background explícito para o modo interventional.
+    Retorna (shap_vals_2d, feature_names) no formato padronizado:
+      - shape final: (n_amostras, n_features)
+      - n_features == len(X.columns)
+      - n_amostras == len(X) (se necessário, faz broadcast/recorte)
+    Regras:
+      * XGBoost -> SHAP 'permutation' em predict_proba (evita bug base_score)
+      * LightGBM / árvores sklearn -> TreeExplainer
+      * Genérico -> 'permutation'
     """
-    # background com no máx. 256 amostras representativas
-    bg_rows = min(256, max(32, int(len(X) * 0.1)))
-    background = shap.sample(X, bg_rows, random_state=0)
+    import numpy as _np
+    import shap
 
-    explainer = shap.TreeExplainer(
-        model,
-        data=background,                    # <- background explícito
-        feature_perturbation="interventional"
-    )
-    vals = explainer.shap_values(X)
+    feats = list(X.columns)
+    p = len(feats)
+    n = len(X)
 
-    if isinstance(vals, list):
-        shap_2d = vals[1] if len(vals) > 1 else vals[-1]
+    # Detecta tipo
+    try:
+        import xgboost as _xgb
+        _is_xgb = isinstance(model, (_xgb.XGBClassifier, getattr(_xgb, "XGBRFClassifier", tuple())))
+    except Exception:
+        _is_xgb = False
+
+    try:
+        import lightgbm as _lgb
+        _is_lgbm = isinstance(model, _lgb.LGBMClassifier)
+    except Exception:
+        _is_lgbm = False
+
+    from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+    _is_sklearn_tree = isinstance(model, (RandomForestClassifier, HistGradientBoostingClassifier))
+
+    def _to_2d(vals: _np.ndarray) -> _np.ndarray:
+        """Normaliza para (n, p). Resolve eixos/classe; trunca/pad colunas; e garante n linhas."""
+        vals = _np.asarray(vals)
+
+        # (n, classes, feats) -> pega classe positiva
+        if vals.ndim == 3:
+            if vals.shape[1] > 1 and vals.shape[2] == p:
+                vals = vals[:, 1, :]  # (n, p)
+            elif vals.shape[2] > 1 and vals.shape[1] == p:
+                vals = vals[:, 1, :].T  # (n, p) após ajuste
+            else:
+                if vals.shape[-1] == p:
+                    vals = vals[:, 0, :]
+                else:
+                    vals = vals.reshape(vals.shape[0], -1)
+
+        elif vals.ndim == 2:
+            pass  # (n, p) ou (m, q)
+
+        elif vals.ndim == 1:
+            vals = vals.reshape(1, -1)
+
+        else:
+            vals = vals.reshape(vals.shape[0], -1)
+
+        # Ajusta colunas para p
+        if vals.shape[1] > p:
+            vals = vals[:, :p]
+        elif vals.shape[1] < p:
+            pad_c = _np.zeros((vals.shape[0], p - vals.shape[1]), dtype=vals.dtype)
+            vals = _np.concatenate([vals, pad_c], axis=1)
+
+        # Ajusta linhas para n
+        if vals.shape[0] == n:
+            return vals
+        if vals.shape[0] == 1:
+            return _np.repeat(vals, n, axis=0)
+        if vals.shape[0] < n:
+            # repete a última linha até bater n
+            reps = n - vals.shape[0]
+            tail = _np.repeat(vals[-1:, :], reps, axis=0)
+            return _np.concatenate([vals, tail], axis=0)
+        # se veio com mais, recorta
+        return vals[:n, :]
+
+    if _is_xgb:
+        # XGBoost: permutation em predict_proba
+        bg_size = min(200, len(X))
+        background = X.sample(bg_size, random_state=123) if len(X) > bg_size else X
+        f = getattr(model, "predict_proba", None) or getattr(model, "predict", None)
+        exp = shap.Explainer(f, background, algorithm="permutation")(X)
+        vals = _to_2d(exp.values)
+
+    elif _is_lgbm or _is_sklearn_tree:
+        # LightGBM / sklearn trees: TreeExplainer
+        exp = shap.TreeExplainer(model, feature_perturbation="interventional")(X)
+        vals = exp.values
+        if isinstance(vals, list):
+            vals = vals[1] if len(vals) > 1 else vals[0]
+        vals = _to_2d(vals)
+
     else:
-        shap_2d = vals
+        # Genérico: permutation
+        bg_size = min(200, len(X))
+        background = X.sample(bg_size, random_state=123) if len(X) > bg_size else X
+        f = getattr(model, "predict_proba", None) or getattr(model, "predict", None)
+        exp = shap.Explainer(f, background, algorithm="permutation")(X)
+        vals = _to_2d(exp.values)
 
-    shap_2d = np.asarray(shap_2d, dtype=float)
-    return shap_2d, list(X.columns)
+    return vals, feats
 
 def _save_summary_outputs(
     out_dir: Path,
@@ -70,8 +148,26 @@ def _save_summary_outputs(
     Salva:
       - summary_mean_abs_shap.csv (importância global |SHAP| média)
       - summary_bar.png (barplot SHAP) [opcional]
+    Garante alinhamento: shap_vals.shape[1] == len(feature_names) == X.shape[1]
     """
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Alinhamento robusto
+    p = X.shape[1]
+    if shap_vals.ndim == 1:
+        shap_vals = np.reshape(shap_vals, (1, -1))
+    if shap_vals.shape[1] != p:
+        # Reajusta para colunas de X
+        if shap_vals.shape[0] == p:
+            shap_vals = shap_vals.T
+        elif shap_vals.shape[1] > p:
+            shap_vals = shap_vals[:, :p]
+        elif shap_vals.shape[1] < p:
+            pad = np.zeros((shap_vals.shape[0], p - shap_vals.shape[1]), dtype=shap_vals.dtype)
+            shap_vals = np.concatenate([shap_vals, pad], axis=1)
+
+    if len(feature_names) != p:
+        feature_names = list(X.columns)
 
     mean_abs = np.mean(np.abs(shap_vals), axis=0)
     df_imp = pd.DataFrame({
@@ -106,11 +202,39 @@ def _save_per_sample_topk(
 ) -> None:
     """
     Para cada amostra, salva um CSV com as top-k contribuições absolutas.
-    Arquivo: sample_{idx:05d}_topk.csv
+    Garante alinhamento de linhas e colunas, e evita index errors.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Alinhamento de colunas com X
+    p = X.shape[1]
+    if shap_vals.ndim == 1:
+        shap_vals = np.reshape(shap_vals, (1, -1))
+    if shap_vals.shape[1] != p:
+        if shap_vals.shape[1] > p:
+            shap_vals = shap_vals[:, :p]
+        else:
+            pad = np.zeros((shap_vals.shape[0], p - shap_vals.shape[1]), dtype=shap_vals.dtype)
+            shap_vals = np.concatenate([shap_vals, pad], axis=1)
+    if len(feature_names) != p:
+        feature_names = list(X.columns)
+
+    # Alinhamento de linhas com X
+    n = X.shape[0]
+    m = shap_vals.shape[0]
+    if m == 1 and n > 1:
+        shap_vals = np.repeat(shap_vals, n, axis=0)
+        m = n
+    elif m < n:
+        tail = np.repeat(shap_vals[-1:, :], n - m, axis=0)
+        shap_vals = np.concatenate([shap_vals, tail], axis=0)
+        m = n
+    elif m > n:
+        shap_vals = shap_vals[:n, :]
+        m = n
+
     absvals = np.abs(shap_vals)
-    for i in range(X.shape[0]):
+    for i in range(n):
         idx_sort = np.argsort(-absvals[i])[:top_k]
         df_i = pd.DataFrame({
             "feature": [feature_names[j] for j in idx_sort],
