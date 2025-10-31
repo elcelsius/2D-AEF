@@ -66,5 +66,13 @@ reports/**/confusion_matrix.png
 reports/**/f1_per_class.png
 reports/**/preds.csv
 reports/**/xai/
+
+# allow-list específica (apenas estes entram no git)
+!reports/**/confusion_matrix_unsw.png
+!reports/**/f1_per_class_unsw.png
+!reports/**/confusion_matrix_cic.png
+!reports/**/f1_per_class_cic.png
+
+# manter .md e READMEs
 !reports/**/*.md
 !reports/**/README.md

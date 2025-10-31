@@ -1,0 +1,12 @@
+{
+  "f1_macro": 0.8929378511712122,
+  "accuracy": 0.9009872191900354,
+  "n": 175341,
+  "labels": [
+    "0",
+    "1"
+  ],
+  "preds_csv": "outputs\\eval_unsw\\preds.csv",
+  "out_dir": "reports\\UNSW",
+  "label_space_mapping": {}
+}
