@@ -10,14 +10,19 @@ O 2D-AEF organiza a detecção de intrusão em **dois estágios**:
 ### Diagrama (alto nível)
 ```mermaid
 flowchart LR
-  A[Raw CSV] --> B[ETL/Prep]
-  B --> C[Feature Pool Builder]
-  C --> D[Train Specialists]
-  B --> E[Train Gatekeeper]
-  E -->|rótulo grosso| F[Inferência 2 estágios]
-  D -->|mapa especialistas| F
-  F --> G[Relatórios / Métricas]
-  F --> H[XAI (SHAP/LIME)]
+    A[Dados brutos (UNSW, CIC, ...)] --> B[Ingestão / ETL]
+    B --> C[(Feature Pool<br/>artifacts/feature_pool_*.json)]
+    B --> D[Gatekeeper Train<br/>artifacts/gatekeeper_*.joblib]
+    C --> E[Treinar Especialistas por Classe<br/>artifacts/specialists_*/*/model.joblib]
+    D --> F[Gatekeeper (.joblib)]
+    E --> G[(Mapa de Especialistas<br/>artifacts/specialist_map_*.json)]
+    I[CSV para inferência<br/>data/*_infer.csv ou *_eval.csv] --> J[Inferência 2 estágios<br/>infer-twostage]
+    F --> J
+    G --> J
+    J --> K[Predições (preds.csv) + métricas]
+    J --> L[XAI (SHAP / LIME)]
+    K --> M[Plots / Relatórios<br/>plot-eval → confusion_matrix.png, f1_per_class.png]
+    L --> N[Consolidação XAI<br/>aggregate-xai → _consolidado/]
 ```
 
 ## Estrutura do Repositório (resumo)

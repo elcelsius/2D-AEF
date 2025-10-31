@@ -281,5 +281,20 @@ aggregate-xai `
 
 ---
 
+## 🧭 Arquitetura do Projeto
+
+A arquitetura completa (com diagramas Mermaid) está documentada em **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
+**Conteúdo do documento:**
+- Visão geral do pipeline (ingestão → gatekeeper → matriz de especialistas → inferência 2 estágios → avaliação → XAI).
+- Diagrama de módulos do pacote `twodaef/` (CLIs, `eval/`, `reports/`, `xai/`).
+- Fluxos de treino e de inferência (inclui contrato de I/O e artefatos gerados).
+- Padrões de pastas (`data/`, `artifacts/`, `outputs/`, `reports/`) e boas práticas de versionamento.
+- Roadmap e pontos de extensão (novos datasets, novos especialistas, tuning, serving).
+
+> Dica: o GitHub renderiza Mermaid nativamente; se o preview local não mostrar os diagramas, abra o arquivo no GitHub.
+
+---
+
 ## Licença
 MIT © Celso de Oliveira Lisboa
