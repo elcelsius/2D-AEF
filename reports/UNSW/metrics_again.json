@@ -3,12 +3,10 @@
   "accuracy": 0.9009872191900354,
   "n": 175341,
   "labels": [
-    "Benign",
-    "Others"
+    "0",
+    "1"
   ],
-  "preds_csv": "outputs\\eval_unsw\\preds.csv",
-  "out_dir": "reports\\UNSW",
-  "dataset_tag": "unsw",
-  "confusion_matrix_png": "reports\\UNSW\\confusion_matrix_unsw.png",
-  "f1_per_class_png": "reports\\UNSW\\f1_per_class_unsw.png"
+  "preds_csv": "outputs/eval_unsw/preds.csv",
+  "out_dir": "reports/UNSW",
+  "dataset_tag": "unsw"
 }

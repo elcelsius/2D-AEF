@@ -6,9 +6,7 @@
     "Benign",
     "Others"
   ],
-  "preds_csv": "reports\\cic\\preds.csv",
-  "out_dir": "reports\\cic",
-  "dataset_tag": "cic",
-  "confusion_matrix_png": "reports\\cic\\confusion_matrix_cic.png",
-  "f1_per_class_png": "reports\\cic\\f1_per_class_cic.png"
+  "preds_csv": "outputs/eval_cic/preds.csv",
+  "out_dir": "reports/cic",
+  "dataset_tag": "cic"
 }
