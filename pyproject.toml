@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "twodaef"
+version = "0.1.0"
+description = "2D-AEF: Framework de Ensemble Adaptativo Bidimensional para IDS (Gatekeeper + Especialistas + XAI)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "Celso de Oliveira Lisboa" }
+]
+
+# Dependências principais (mesmo conteúdo do requirements.txt)
+dependencies = [
+  "numpy>=2.0.0",
+  "pandas>=2.2.0",
+  "scikit-learn>=1.5.0",
+  "imbalanced-learn>=0.12.0",
+  "joblib>=1.4.0",
+  "rich>=13.7.0",
+  "loguru>=0.7.2",
+  "pydantic>=2.8.0",
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
+  "matplotlib>=3.9.0",
+  "shap>=0.45.0",
+  # boosters (opcionais, mas recomendados)
+  "lightgbm>=4.5.0",
+  "xgboost>=2.0.3",
+  "catboost>=1.2.5"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Entry points (scripts de linha de comando)
+[project.scripts]
+gatekeeper-train = "twodaef.cli_train_gatekeeper:main"
+gatekeeper-predict = "twodaef.cli_predict_gatekeeper:main"
+make-feature-pool = "twodaef.cli_make_feature_pool:main"
+train-specialists = "twodaef.cli_train_specialists:main"
+infer-twostage = "twodaef.cli_infer_twostage:main"
+eval-twostage = "twodaef.cli_eval_twostage:main"
+explain-specialist = "twodaef.cli_explain_specialist:main"
+aggregate-xai = "twodaef.cli_aggregate_xai:main"
+plot-eval = "twodaef.cli_plot_eval:main"

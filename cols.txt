@@ -1,0 +1,4 @@
+flow_duration
+pkt_len_mean
+fwd_pkt_cnt
+bwd_pkt_cnt

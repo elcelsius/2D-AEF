@@ -1,0 +1,73 @@
+{
+  "classes": [
+    0,
+    1
+  ],
+  "models_used": [
+    "lgbm",
+    "xgb",
+    "cat",
+    "sk_hgb",
+    "sk_rf"
+  ],
+  "specialists": {
+    "0": {
+      "model_key": "lgbm",
+      "feature_set_name": "GWO_10",
+      "k": 19,
+      "f1_k": 0.9765163714439077,
+      "latency_ms": 0.0012251047542780886,
+      "features": [
+        "sbytes",
+        "smean",
+        "sloss",
+        "dbytes",
+        "ct_state_ttl",
+        "response_body_len",
+        "dur",
+        "ct_src_ltm",
+        "dttl",
+        "ct_dst_ltm",
+        "ct_srv_dst",
+        "dpkts",
+        "ct_dst_src_ltm",
+        "ct_flw_http_mthd",
+        "dloss",
+        "swin",
+        "ct_srv_src",
+        "ct_dst_sport_ltm",
+        "is_sm_ips_ports"
+      ],
+      "model_path": "artifacts\\specialists\\0\\model.joblib"
+    },
+    "1": {
+      "model_key": "lgbm",
+      "feature_set_name": "GWO_10",
+      "k": 19,
+      "f1_k": 0.9805879090404881,
+      "latency_ms": 0.0011690896950395074,
+      "features": [
+        "sbytes",
+        "smean",
+        "sloss",
+        "dbytes",
+        "ct_state_ttl",
+        "response_body_len",
+        "dur",
+        "ct_src_ltm",
+        "dttl",
+        "ct_dst_ltm",
+        "ct_srv_dst",
+        "dpkts",
+        "ct_dst_src_ltm",
+        "ct_flw_http_mthd",
+        "dloss",
+        "swin",
+        "ct_srv_src",
+        "ct_dst_sport_ltm",
+        "is_sm_ips_ports"
+      ],
+      "model_path": "artifacts\\specialists\\1\\model.joblib"
+    }
+  }
+}

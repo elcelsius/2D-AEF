@@ -1,0 +1,37 @@
+# --- Python / environments ---
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+.venv/
+.env
+.env.*
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Data & outputs (large / reproducible) ---
+# Ignore all raw/derived data by default; keep a placeholder README if you want.
+data/**
+!data/README.md
+
+# Ignore all outputs; keep Markdown reports if desired.
+outputs/**
+!outputs/**/*.md
+!outputs/**/README.md
+
+# Artifacts: ignore heavy binaries; keep configs/maps (.json)
+artifacts/**
+!artifacts/**/*.json
+!artifacts/**/README.md
+
+# --- Notebooks / checkpoints ---
+*.ipynb_checkpoints/
+
+# --- Logs ---
+logs/
+*.log

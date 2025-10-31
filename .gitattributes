@@ -1,0 +1,7 @@
+# Optional: use Git LFS for large binaries (enable with: git lfs install)
+# If you decide to version trained models or figures, LFS helps keep repo light.
+*.joblib filter=lfs diff=lfs merge=lfs -text
+*.bin    filter=lfs diff=lfs merge=lfs -text
+*.pkl    filter=lfs diff=lfs merge=lfs -text
+*.png    filter=lfs diff=lfs merge=lfs -text
+*.pdf    filter=lfs diff=lfs merge=lfs -text
