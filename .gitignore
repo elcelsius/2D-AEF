@@ -45,18 +45,21 @@ catboost_info/
 data/**
 !data/
 !data/README.md
+!data/**/.gitkeep
 
 # artifacts/: ignore tudo, EXCETO JSONs e README
 artifacts/**
 !artifacts/
 !artifacts/**/*.json
 !artifacts/**/README.md
+!artifacts/**/.gitkeep
 
 # outputs/: ignore tudo, EXCETO relatórios .md e READMEs
 outputs/**
 !outputs/
 !outputs/**/*.md
 !outputs/**/README.md
+!outputs/**/.gitkeep
 
 # reports/ (na raiz): ignore imagens/CSVs pesados; mantenha .md
 reports/**/confusion_matrix.png
@@ -65,9 +68,3 @@ reports/**/preds.csv
 reports/**/xai/
 !reports/**/*.md
 !reports/**/README.md
-
-# --- Keep placeholder files inside ignored trees ---
-!artifacts/**/.gitkeep
-!data/**/.gitkeep
-!outputs/**/.gitkeep
-
