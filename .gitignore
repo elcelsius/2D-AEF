@@ -65,3 +65,9 @@ reports/**/preds.csv
 reports/**/xai/
 !reports/**/*.md
 !reports/**/README.md
+
+# --- Keep placeholder files inside ignored trees ---
+!artifacts/**/.gitkeep
+!data/**/.gitkeep
+!outputs/**/.gitkeep
+
