@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "2D-AEF: Adaptive Ensemble Framework for Intrusion Detection"
+version: "v0.1.0"
+authors:
+  - family-names: "Lisboa"
+    given-names: "Celso de Oliveira"
+repository-code: "https://github.com/elcelsius/2D-AEF"
+url: "https://github.com/elcelsius/2D-AEF"
+abstract: >
+  2D-AEF is a two-stage IDS framework that routes network flows through
+  a fast gatekeeper and per-class specialists chosen by classwise F1 and latency.
+  The repository includes reproducible pipelines for UNSW-NB15 and CIC-IDS2018,
+  plotting utilities, and XAI (SHAP/LIME) reports.
+keywords:
+  - intrusion detection
+  - ensemble learning
+  - explainable AI
+  - cybersecurity
+  - machine learning
+license: MIT
+preferred-citation:
+  type: article
+  title: "2D-AEF: A Two-Stage Adaptive Ensemble for Intrusion Detection with Per-Class Specialists"
+  authors:
+    - family-names: "Lisboa"
+      given-names: "Celso de Oliveira"
+  year: 2025
+  journal: "Under preparation"
