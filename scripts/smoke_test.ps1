@@ -1,16 +1,20 @@
 # scripts/smoke_test.ps1
-# Smoke test mínimo: gera um preds.csv sintético (binário) e confere plots do CIC.
-# Mantemos UNSW fora do smoke do CI para ser rápido e 100% reprodutível.
+# Smoke test mínimo: gera preds.csv sintético e valida plots do CIC.
+# Extra: força backend "Agg" (headless) e imprime diagnóstico se algo falhar.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+# >>> Headless matplotlib
+$env:MPLBACKEND = "Agg"
+# (opcional) silencia warnings para logs mais limpos
+$env:PYTHONWARNINGS = "ignore"
 
 Write-Host "=== Smoke: ambiente ==="
 python --version
 pip --version
 
-Write-Host "=== Smoke: garantir CLI instalados ==="
-# Se o workflow já roda 'pip install -e .', estes --help apenas validam a presença
+Write-Host "=== Smoke: garantir CLI instalado ==="
 plot-eval --help | Out-Null
 
 Write-Host "=== Smoke: preparar estrutura mínima ==="
@@ -25,23 +29,41 @@ label,pred_final
 0,0
 1,1
 "@
-$csv | Out-File -FilePath outputs\eval_cic\preds.csv -Encoding utf8
+$csvPath = "outputs\eval_cic\preds.csv"
+$csv | Out-File -FilePath $csvPath -Encoding utf8
 
-Write-Host "=== Smoke: gerar plots CIC (usa fallback outputs\\eval_cic\\preds.csv) ==="
+Write-Host "=== Smoke: rodar plot-eval (fallback em outputs\\eval_cic\\preds.csv) ==="
 plot-eval `
   --label_col label `
   --out_dir reports\cic `
   --dataset_tag cic
 
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "plot-eval retornou código $LASTEXITCODE"
+  Write-Host "Tree de reports após plot-eval:"
+  Get-ChildItem -Recurse reports | ForEach-Object { $_.FullName }
+  Write-Error "Smoke FAIL: plot-eval retornou erro."
+  exit 1
+}
+
 Write-Host "=== Smoke: validar artefatos (CIC) ==="
 $cic_cm = "reports\cic\confusion_matrix_cic.png"
 $cic_f1 = "reports\cic\f1_per_class_cic.png"
+$metrics = "reports\cic\metrics_again.json"
 
 $ok1 = Test-Path -Path $cic_cm -PathType Leaf -ErrorAction SilentlyContinue
 $ok2 = Test-Path -Path $cic_f1 -PathType Leaf -ErrorAction SilentlyContinue
 
 if (-not ($ok1 -and $ok2)) {
-  Get-ChildItem -Recurse reports | Write-Host
+  Write-Host "`n=== DIAGNÓSTICO ==="
+  if (Test-Path -Path $metrics) {
+    Write-Host "metrics_again.json encontrado. Conteúdo:"
+    Get-Content $metrics | Write-Host
+  } else {
+    Write-Host "metrics_again.json não encontrado."
+  }
+  Write-Host "`nÁrvore de reports:"
+  Get-ChildItem -Recurse reports | ForEach-Object { $_.FullName }
   Write-Error "Smoke FAIL: plots do CIC ausentes."
   exit 1
 }
