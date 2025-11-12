@@ -1,37 +1,43 @@
-name: Smoke
+name: Smoke (Windows)
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "requirements.txt"
+      - ".github/workflows/smoke.yml"
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  windows-smoke:
+  smoke:
     runs-on: windows-latest
+    timeout-minutes: 20
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
-      - name: Install requirements
+      - name: Install deps
+        shell: pwsh
         run: |
-          if (Test-Path "requirements.txt") {
-            pip install -r requirements.txt
-          }
+          python -m pip install --upgrade pip
+          if (Test-Path "requirements.txt") { pip install -r requirements.txt }
+          pip install -e .
 
-      - name: Install package (editable)
-        run: pip install -e .
-
-      - name: CLI sanity (help only)
+      - name: Verify CLIs
+        shell: pwsh
         run: |
           gatekeeper-train --help
           train-specialists --help
@@ -41,9 +47,6 @@ jobs:
           explain-specialist --help
           aggregate-xai --help
 
-      - name: Import check
-        run: python - <<'PY'
-import importlib
-m = importlib.import_module("twodaef")
-print("twodaef OK:", m.__name__)
-PY
+      - name: Run smoke script
+        shell: pwsh
+        run: pwsh -File scripts/smoke_test.ps1
