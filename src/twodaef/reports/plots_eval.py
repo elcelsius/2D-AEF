@@ -2,16 +2,17 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 
-import json
 import numpy as np
-import pandas as pd
 from loguru import logger
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, f1_score, accuracy_score
 
-
-def _ensure_outdir(p: Path) -> None:
-    p.mkdir(parents=True, exist_ok=True)
+# I/O helpers centralizados
+from twodaef.utils.io import (
+    read_csv_utf8,
+    write_json_utf8,
+    ensure_dir,
+)
 
 
 def _try_align_spaces(y_true_raw: np.ndarray, y_pred_raw: np.ndarray) -> Tuple[np.ndarray, np.ndarray, Optional[Dict[str, str]]]:
@@ -148,8 +149,10 @@ def _resolve_preds_csv(preds_csv: str | None, dataset_tag: str | None) -> Path:
     for c in candidates:
         if c.exists():
             return c
-    raise FileNotFoundError(f"Não encontrei preds.csv para dataset_tag='{dataset_tag}'. "
-                            f"Tente passar --preds_csv explicitamente.")
+    raise FileNotFoundError(
+        f"Não encontrei preds.csv para dataset_tag='{dataset_tag}'. "
+        f"Tente passar --preds_csv explicitamente."
+    )
 
 
 def make_eval_plots(
@@ -167,9 +170,9 @@ def make_eval_plots(
     """
     preds_csv_p = _resolve_preds_csv(preds_csv, dataset_tag)
     outp = Path(out_dir)
-    _ensure_outdir(outp)
+    ensure_dir(outp)
 
-    df = pd.read_csv(preds_csv_p)
+    df = read_csv_utf8(preds_csv_p)
     if label_col not in df.columns:
         raise KeyError(f"Coluna '{label_col}' não está presente em {preds_csv_p}")
 
@@ -217,7 +220,7 @@ def make_eval_plots(
         "out_dir": outp.as_posix(),
         "dataset_tag": dataset_tag or "",
     }
-    (outp / "metrics_again.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    write_json_utf8(payload, outp / "metrics_again.json")
 
     logger.success(f"Plots salvos em {outp} ({cm_png.name}, {f1_png.name})")
     logger.info(f"F1-macro={f1_macro:.6f} | Acc={acc:.6f} | n={df.shape[0]}")
