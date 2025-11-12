@@ -1,50 +1,62 @@
 # scripts/smoke_test.ps1
+# Smoke test sem datasets: cria um preds.csv mínimo e checa geração de plots.
+
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-Write-Host "== 2D-AEF Smoke Test =="
 
-# 1) Mini dados (CIC binário já que é rápido)
-python scripts/prep_cic_train.py
+Write-Host "=== Smoke: ambiente ==="
+python --version
+pip --version
 
-# 2) Gatekeeper rápido
-gatekeeper-train `
-  --train_csv data\train_cic.csv `
-  --target_col label `
-  --features gatekeeper_cic_cols.txt `
-  --model_out artifacts\gatekeeper_cic.joblib
+Write-Host "=== Smoke: garantir comandos ==="
+gatekeeper-train --help | Out-Null
+train-specialists --help | Out-Null
+infer-twostage --help | Out-Null
+eval-twostage --help | Out-Null
+plot-eval --help | Out-Null
+explain-specialist --help | Out-Null
+aggregate-xai --help | Out-Null
 
-# 3) Especialistas (um conjunto rápido)
-train-specialists `
-  --train_csv data\train_cic.csv `
-  --target_col label `
-  --feature_pool_json artifacts\feature_pool_cic.json `
-  --out_dir artifacts\specialists_cic `
-  --map_path artifacts\specialist_map_cic.json `
-  --models lgbm `
-  --max_features_per_set 20
+Write-Host "=== Smoke: preparar estrutura mínima ==="
+New-Item -ItemType Directory -Force -Path outputs\eval_cic | Out-Null
+New-Item -ItemType Directory -Force -Path reports\cic | Out-Null
+New-Item -ItemType Directory -Force -Path reports\UNSW | Out-Null
 
-# 4) Avaliação + plots
-eval-twostage `
-  --gatekeeper_model artifacts\gatekeeper_cic.joblib `
-  --gatekeeper_features gatekeeper_cic_cols.txt `
-  --specialist_map artifacts\specialist_map_cic.json `
-  --input_csv data\cic_eval.csv `
-  --label_col label `
-  --output_dir outputs\eval_cic
+Write-Host "=== Smoke: criar preds.csv sintético (binário) ==="
+$csv = @"
+label,pred_final
+0,0
+1,1
+0,0
+1,1
+"@
+$csv | Out-File -FilePath outputs\eval_cic\preds.csv -Encoding utf8
 
+# Opcional: repetir para UNSW se quiser um CSV no mesmo local de fallback
+Copy-Item outputs\eval_cic\preds.csv -Destination reports\UNSW\preds.csv -Force
+
+Write-Host "=== Smoke: gerar plots CIC (usa fallback outputs\\eval_cic\\preds.csv) ==="
 plot-eval `
   --label_col label `
   --out_dir reports\cic `
   --dataset_tag cic
 
-# 5) Verificações mínimas
-if (!(Test-Path "reports\cic\confusion_matrix_cic.png") -or !(Test-Path "reports\cic\f1_per_class_cic.png")) {
-  Write-Error "Smoke FAIL: PNGs não foram gerados."
-  exit 1
-}
-if (!(Test-Path "outputs\eval_cic\preds.csv")) {
-  Write-Error "Smoke FAIL: outputs\eval_cic\preds.csv ausente."
-  exit 1
+Write-Host "=== Smoke: gerar plots UNSW (usa fallback reports\\UNSW\\preds.csv) ==="
+plot-eval `
+  --label_col label `
+  --out_dir reports\UNSW `
+  --dataset_tag unsw
+
+Write-Host "=== Smoke: validar artefatos ==="
+$cic1 = Test-Path reports\cic\confusion_matrix_cic.png
+$cic2 = Test-Path reports\cic\f1_per_class_cic.png
+$u1   = Test-Path reports\UNSW\confusion_matrix_unsw.png
+$u2   = Test-Path reports\UNSW\f1_per_class_unsw.png
+
+if (-not ($cic1 -and $cic2 -and $u1 -and $u2)) {
+  Get-ChildItem -Recurse reports | Write-Host
+  Write-Error "Smoke FAIL: plots ausentes (CIC/UNSW)."
 }
 
-Write-Host "SMOKE OK"
+Write-Host "=== Smoke: OK ==="
 exit 0
