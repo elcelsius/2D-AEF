@@ -64,7 +64,9 @@ outputs/**
 # reports/ (na raiz): ignore imagens/CSVs pesados; mantenha .md
 reports/**/metrics_again.json
 reports/**/confusion_matrix.png
+reports/**/confusion_matrix_*.png
 reports/**/f1_per_class.png
+reports/**/f1_per_class_*.png
 reports/**/preds.csv
 reports/**/xai/
 
