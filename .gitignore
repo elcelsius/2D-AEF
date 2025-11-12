@@ -62,6 +62,7 @@ outputs/**
 !outputs/**/.gitkeep
 
 # reports/ (na raiz): ignore imagens/CSVs pesados; mantenha .md
+reports/**/metrics_again.json
 reports/**/confusion_matrix.png
 reports/**/f1_per_class.png
 reports/**/preds.csv
