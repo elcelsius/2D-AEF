@@ -79,3 +79,4 @@ reports/**/xai/
 # manter .md e READMEs
 !reports/**/*.md
 !reports/**/README.md
+*.zip

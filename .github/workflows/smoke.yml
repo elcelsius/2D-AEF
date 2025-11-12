@@ -1,0 +1,49 @@
+name: Smoke
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  windows-smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install requirements
+        run: |
+          if (Test-Path "requirements.txt") {
+            pip install -r requirements.txt
+          }
+
+      - name: Install package (editable)
+        run: pip install -e .
+
+      - name: CLI sanity (help only)
+        run: |
+          gatekeeper-train --help
+          train-specialists --help
+          infer-twostage --help
+          eval-twostage --help
+          plot-eval --help
+          explain-specialist --help
+          aggregate-xai --help
+
+      - name: Import check
+        run: python - <<'PY'
+import importlib
+m = importlib.import_module("twodaef")
+print("twodaef OK:", m.__name__)
+PY
