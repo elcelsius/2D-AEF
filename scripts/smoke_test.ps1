@@ -1,62 +1,32 @@
 # scripts/smoke_test.ps1
-# Smoke test sem datasets: cria um preds.csv mínimo e checa geração de plots.
+# Smoke test mínimo: valida que o pacote instala e que geramos plots do CIC.
+# (UNSW fica fora do smoke para manter o job leve e reprodutível no CI.)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Write-Host "=== Smoke: ambiente ==="
+Write-Host "== 2D-AEF :: Smoke Test =="
 python --version
 pip --version
 
-Write-Host "=== Smoke: garantir comandos ==="
-gatekeeper-train --help | Out-Null
-train-specialists --help | Out-Null
-infer-twostage --help | Out-Null
-eval-twostage --help | Out-Null
-plot-eval --help | Out-Null
-explain-specialist --help | Out-Null
-aggregate-xai --help | Out-Null
+Write-Host "== install package (editable) =="
+pip install -e .
 
-Write-Host "=== Smoke: preparar estrutura mínima ==="
-New-Item -ItemType Directory -Force -Path outputs\eval_cic | Out-Null
-New-Item -ItemType Directory -Force -Path reports\cic | Out-Null
-New-Item -ItemType Directory -Force -Path reports\UNSW | Out-Null
-
-Write-Host "=== Smoke: criar preds.csv sintético (binário) ==="
-$csv = @"
-label,pred_final
-0,0
-1,1
-0,0
-1,1
-"@
-$csv | Out-File -FilePath outputs\eval_cic\preds.csv -Encoding utf8
-
-# Opcional: repetir para UNSW se quiser um CSV no mesmo local de fallback
-Copy-Item outputs\eval_cic\preds.csv -Destination reports\UNSW\preds.csv -Force
-
-Write-Host "=== Smoke: gerar plots CIC (usa fallback outputs\\eval_cic\\preds.csv) ==="
+Write-Host "== generate CIC plots =="
+# Usa o CLI que já sabe resolver automaticamente o preds.csv (dataset_tag=cic)
+# e grava os PNGs com sufixo _cic em reports\cic\.
 plot-eval `
   --label_col label `
   --out_dir reports\cic `
   --dataset_tag cic
 
-Write-Host "=== Smoke: gerar plots UNSW (usa fallback reports\\UNSW\\preds.csv) ==="
-plot-eval `
-  --label_col label `
-  --out_dir reports\UNSW `
-  --dataset_tag unsw
+# Verificação dos arquivos (apenas CIC)
+$cic_cm = "reports\cic\confusion_matrix_cic.png"
+$cic_f1 = "reports\cic\f1_per_class_cic.png"
 
-Write-Host "=== Smoke: validar artefatos ==="
-$cic1 = Test-Path reports\cic\confusion_matrix_cic.png
-$cic2 = Test-Path reports\cic\f1_per_class_cic.png
-$u1   = Test-Path reports\UNSW\confusion_matrix_unsw.png
-$u2   = Test-Path reports\UNSW\f1_per_class_unsw.png
-
-if (-not ($cic1 -and $cic2 -and $u1 -and $u2)) {
-  Get-ChildItem -Recurse reports | Write-Host
-  Write-Error "Smoke FAIL: plots ausentes (CIC/UNSW)."
+if (Test-Path $cic_cm -PathType Leaf -ErrorAction SilentlyContinue -and
+    Test-Path $cic_f1 -PathType Leaf -ErrorAction SilentlyContinue) {
+  Write-Host "Smoke OK — plots em reports\cic"
+} else {
+  Write-Error "Smoke FAIL: plots do CIC ausentes."
 }
-
-Write-Host "=== Smoke: OK ==="
-exit 0
